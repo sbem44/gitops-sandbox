@@ -1,0 +1,8 @@
+apiVersion: triggers.tekton.dev/v1beta1
+kind: TriggerBinding
+metadata:
+  name: petclinic-tag-binding
+spec:
+  params:
+    - name: tag
+      value: $(body.ref)

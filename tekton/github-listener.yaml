@@ -1,0 +1,43 @@
+apiVersion: triggers.tekton.dev/v1beta1
+kind: EventListener
+metadata:
+  name: github-listener
+spec:
+  namespaceSelector: {}
+  resources:
+    kubernetesResource:
+      spec:
+        template:
+          metadata:
+            creationTimestamp: null
+          spec:
+            containers:
+              - name: ''
+                resources:
+                  limits:
+                    cpu: 500m
+                    memory: 128Mi
+                  requests:
+                    cpu: 250m
+                    memory: 64Mi
+            serviceAccountName: pipeline
+  serviceAccountName: pipeline
+  triggers:
+    - bindings:
+        - kind: TriggerBinding
+          ref: petclinic-tag-binding
+      interceptors:
+        - params:
+            - name: secretRef
+              value:
+                secretKey: secretToken
+                secretName: github-webhook-secret
+            - name: eventTypes
+              value:
+                - create
+          ref:
+            kind: ClusterInterceptor
+            name: github
+      name: github-listener
+      template:
+        ref: petclinic-template

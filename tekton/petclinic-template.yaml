@@ -1,0 +1,43 @@
+apiVersion: triggers.tekton.dev/v1beta1
+kind: TriggerTemplate
+metadata:
+  name: petclinic-template
+spec:
+  params:
+    - description: The tag of the image
+      name: tag
+  resourcetemplates:
+    - apiVersion: tekton.dev/v1beta1
+      kind: PipelineRun
+      metadata:
+        generateName: petclinic-pipeline-run-
+      spec:
+        params:
+          - name: tag
+            value: $(tt.params.tag)
+        pipelineRef:
+          name: petclinic-pipeline
+        timeouts:
+          pipeline: 0h5m0s
+        workspaces:
+          - name: source-data
+            volumeClaimTemplate:
+              metadata:
+                creationTimestamp: null
+              spec:
+                accessModes:
+                  - ReadWriteOnce
+                resources:
+                  requests:
+                    storage: 100Mi
+                storageClassName: gp3-csi
+                volumeMode: Filesystem
+              status: {}
+          - name: docker-config
+            secret:
+              secretName: rheembertuzz-sandbox-pull-secret
+          - emptyDir: {}
+            name: source-data-gitops
+          - name: ssh-creds
+            secret:
+              secretName: github-ssh-creds-workspace
